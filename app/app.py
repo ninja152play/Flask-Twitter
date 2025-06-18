@@ -10,7 +10,7 @@ def create_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
 
-    from .models import create_db
+    from .models import User, Tweet, Follow, Like, Attachment
 
     def init_db():
         print("Инициализация базы данных")
