@@ -21,16 +21,20 @@ def get_user_by_key(api_key):
         db.session.commit()
         return user
 
+def get_user_by_id(user_id):
+    return User.query.get(user_id)
+
 def get_likes(tweet_id):
     likes = Like.query.filter_by(tweet_id=tweet_id).all()
-    return [{"user_id": like.user_id, "name": like.user.name} for like in likes]
+    return [{"user_id": like.user_id, "name": get_user_by_id(like.user_id).name} for like in likes]
 
 def get_list_tweets(user):
-    tweets = Tweet.query.filter_by(Tweet.author_id._in(user.following.id)).all()
+    # tweets = Tweet.query.filter_by(Tweet.author_id._in(user.following.id)).all()
+    tweets = db.session.query(Tweet).all()
     return [
         {"id": tweet.id,
          "content": tweet.content,
-         "attachment": tweet.attachment,
+         "attachment": tweet.attachments,
          "author": {
              "id": tweet.author_id,
              "name": tweet.author.name
