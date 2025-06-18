@@ -1,0 +1,35 @@
+services:
+  web:
+    build: ./app
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql://admin:admin@db:5432/twitter_db
+    networks:
+      - app_network
+
+  db:
+    build:
+      context: ./db
+      dockerfile: Dockerfile
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=twitter_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - postgres_logs:/var/log/postgresql
+    ports:
+      - "5432:5432"
+    networks:
+      - app_network
+
+volumes:
+  postgres_data:
+  postgres_logs:
+
+networks:
+  app_network:
+    driver: bridge
