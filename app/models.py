@@ -1,4 +1,4 @@
-from app import db
+from .app import db
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -7,8 +7,23 @@ class User(db.Model):
     api_key = db.Column(db.String(100), unique=True)
     name = db.Column(db.String(100))
 
-    followers = db.relationship('Follow', backref='followers', cascade='all, delete-orphan')
-    following = db.relationship('Follow', backref='follow_on', cascade='all, delete-orphan')
+    following = db.relationship(
+        'Follow',
+        foreign_keys='Follow.follower_id',
+        backref='follower_user',
+        lazy='dynamic',
+        cascade='all, delete-orphan'
+    )
+
+    followers = db.relationship(
+        'Follow',
+        foreign_keys='Follow.follow_on_id',
+        backref='followed_user',
+        lazy='dynamic',
+        cascade='all, delete-orphan'
+    )
+
+    tweets = db.relationship('Tweet', backref='author', lazy='dynamic', cascade='all, delete-orphan')
 
 
 class Tweet(db.Model):
@@ -19,6 +34,7 @@ class Tweet(db.Model):
     content = db.Column(db.Text)
 
     attachments = db.relationship('Attachment', backref='tweet', cascade='all, delete-orphan')
+    likes = db.relationship('Like', backref='tweet', cascade='all, delete-orphan')
 
 
 class Follow(db.Model):
@@ -28,10 +44,9 @@ class Follow(db.Model):
     follower_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     follow_on_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
-    class Meta:
-        unique_together = (
-            ('follower_id', 'follow_on_id'),
-        )
+    __table_args__ = (
+        db.UniqueConstraint('follower_id', 'follow_on_id', name='follow_uc'),
+    )
 
 
 class Like(db.Model):
@@ -41,10 +56,9 @@ class Like(db.Model):
     tweet_id = db.Column(db.Integer, db.ForeignKey('tweets.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
-    class Meta:
-        unique_together = (
-            ('tweet_id', 'user_id'),
-        )
+    __table_args__ = (
+        db.UniqueConstraint('tweet_id', 'user_id', name='like_uc'),
+    )
 
 
 class Attachment(db.Model):
