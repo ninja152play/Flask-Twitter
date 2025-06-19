@@ -1,10 +1,12 @@
 FROM python:3.11-slim
 
-WORKDIR /app
+WORKDIR /app/app
 
-COPY prod-requirements.txt .
+COPY app/prod-requirements.txt .
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r prod-requirements.txt
+
+WORKDIR /app
 
 COPY . .
 
@@ -16,4 +18,9 @@ ENV GUNICORN_BIND=0.0.0.0:5000
 
 EXPOSE 5000
 
-CMD ["gunicorn", "--workers", "4", "--threads", "2", "--bind", "0.0.0.0:5000", "app:app"]
+CMD ["bash", "-c", \
+    "sleep 5 && \
+     cd /app/app && \
+     alembic upgrade head && \
+     cd .. && \
+     gunicorn --workers 4 --threads 2 --bind 0.0.0.0:5000 --access-logfile - main:app"]

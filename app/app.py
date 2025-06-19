@@ -12,8 +12,8 @@ def create_app():
     app = Flask(__name__,
                 static_folder='../dist',
                 template_folder='../dist')
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://admin:admin@localhost:5432/twitter_db'
-    #To prod postgresql://admin:admin@db:5432/twitter_db
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://admin:admin@db:5432/twitter_db'
+    #To prod postgresql://admin:admin@db:5432/twitter_db localhost
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
     db.init_app(app)

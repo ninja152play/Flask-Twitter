@@ -1,12 +1,13 @@
 services:
   web:
-    build: ./app
+    build: .
     ports:
       - "5000:5000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
-      - DATABASE_URL=postgresql://admin:admin@db:5432/twitter_db
+      DATABASE_URL: "postgresql://admin:admin@db:5432/twitter_db"
     networks:
       - app_network
 
@@ -23,6 +24,11 @@ services:
       - postgres_logs:/var/log/postgresql
     ports:
       - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U admin -d twitter_db" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     networks:
       - app_network
 
