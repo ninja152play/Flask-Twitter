@@ -1,12 +1,12 @@
 from .app import db
-from .models import User, Tweet, Like
+from .models import User, Tweet, Like, Attachment
 
 def get_user_by_key(api_key):
-    user = db.session.query(User).filter_by(api_key=api_key).first()
+    user = User.query.filter_by(api_key=api_key).first()
     if user:
         return user
     else:
-        last_user = db.session.query(User).order_by(User.id.desc()).first()
+        last_user = User.query.order_by(User.id.desc()).first()
         if last_user:
             user = User(
                 api_key=api_key,
@@ -28,13 +28,16 @@ def get_likes(tweet_id):
     likes = Like.query.filter_by(tweet_id=tweet_id).all()
     return [{"user_id": like.user_id, "name": get_user_by_id(like.user_id).name} for like in likes]
 
+def get_attachments(tweet_id):
+    attachments = Attachment.query.filter_by(tweet_id=tweet_id).all()
+    return [attachment.url for attachment in attachments]
+
 def get_list_tweets(user):
-    # tweets = Tweet.query.filter_by(Tweet.author_id._in(user.following.id)).all()
-    tweets = db.session.query(Tweet).all()
+    tweets = Tweet.query.all()
     return [
         {"id": tweet.id,
          "content": tweet.content,
-         "attachment": tweet.attachments,
+         "attachments": get_attachments(tweet.id),
          "author": {
              "id": tweet.author_id,
              "name": tweet.author.name
