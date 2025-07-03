@@ -208,6 +208,9 @@ def create_app():
                 follow_on_id=user_id,
                 follower_id=user.id
             )
+            if follow:
+                db.session.add(follow)
+                db.session.commit()
             return {"result": True}, 201
 
         @users_ns.doc(security="Api-Key")
@@ -273,12 +276,12 @@ def create_app():
                 "user": {
                     "id": user.id,
                     "name": user.name,
-                    "followers": [{"id": follower.follower_id, "name": get_user_by_id(follower.follower_id).name} for
-                                  follower in
-                                  followers],
-                    "following": [{"id": following.follow_on_id, "name": get_user_by_id(following.follow_on_id).name}
+                    "followers": [{"id": following.follow_on_id, "name": get_user_by_id(following.follow_on_id).name}
                                   for following in
                                   followings],
+                    "following": [{"id": follower.follower_id, "name": get_user_by_id(follower.follower_id).name} for
+                                  follower in
+                                  followers],
                 }
             }
 
@@ -297,12 +300,12 @@ def create_app():
                 "user": {
                     "id": user.id,
                     "name": user.name,
-                    "followers": [{"id": follower.follower_id, "name": get_user_by_id(follower.follower_id).name} for
-                                  follower in
-                                  followers],
-                    "following": [{"id": following.follow_on_id, "name": get_user_by_id(following.follow_on_id).name}
+                    "followers": [{"id": following.follow_on_id, "name": get_user_by_id(following.follow_on_id).name}
                                   for following in
                                   followings],
+                    "following": [{"id": follower.follower_id, "name": get_user_by_id(follower.follower_id).name} for
+                                  follower in
+                                  followers],
                 }
             }
 
@@ -314,6 +317,12 @@ def create_app():
     def serve_static(path):
         if path.startswith('api/'):
             return None
+        if "uploads" in path:
+            file_name = path.split('/')[-1]
+            if not os.path.exists(os.path.join(app.config['UPLOAD_FOLDER'], file_name)):
+                return None
+            else:
+                return send_from_directory(app.config['UPLOAD_FOLDER'], file_name)
         if os.path.exists(os.path.join(app.static_folder, path)):
             return send_from_directory(app.static_folder, path)
         else:
